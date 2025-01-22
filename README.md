@@ -13,25 +13,24 @@ Add the dependency
 ```xml
 <dependency>
   <groupId>com.github.Samhuwsluz</groupId>
-  <artifactId>RangAPI</artifactId>
-  <version>alpha-4</version>
+  <artifactId>PointsAPI</artifactId>
+  <version>v0.0.1</version>
 </dependency>
 ```
 
 # API Usage
 ## Importing the API
 ```java
-import  ch.ksrminecraft.rangAPI.RangAPI;
-```
-
-## Add RangAPI as Bukkit dependency (plugin.yml)
-```yaml
-softdepend: ['RangAPI']
+import  ch.ksrminecraft.RangAPI
 ```
 
 ## Loading Plugin instance
+
 ```java
- RangAPI api = (RangAPI) this.getServer().getPluginManager().getPlugin("RangAPI");
+ import ch.ksrminecraft.RangAPI;
+
+// Credentials to the Points DB
+RangAPI api = new RangAPI(String url, String user, String pass);
 ```
 
 
@@ -39,24 +38,20 @@ softdepend: ['RangAPI']
 
 ## Get Points from User
 ```java
-public int getPoints(Player p);
+public int getPoints(UUID uuid);
 ```
 
 ## Set Points from User
 ```java
-public void setPoints(Player p, int points);
+public void setPoints(UUID uuid, int points);
+```
+
+## Add Points to User
+```java
+public void addPoints(UUID uuid, int delta);
 ```
 
 # Configuration (Plugin)
-## config.yml
-The Config File has 3 Fields for connecting to the Points Database: 
-
-```yml
-database-url: # URL to the Database ex: mysql://ksrminecraft.ch/[Databasename]
-database-user: # Database User
-database-password: # Password for the database
-```
-
 ## DB-Schema
 The Database should have a **Table** called **points**
 This Table must have the Fields: **UUID:text, points:int(11), time:timestamp**
