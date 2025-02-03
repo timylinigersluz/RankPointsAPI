@@ -1,4 +1,4 @@
-package ch.ksrminecraft;
+package ch.ksrminecraft.RangAPI;
 
 import java.sql.Connection;
 import java.util.UUID;

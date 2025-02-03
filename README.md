@@ -20,14 +20,15 @@ Add the dependency
 
 # API Usage
 ## Importing the API
+
 ```java
-import  ch.ksrminecraft.RangAPI
+import ch.ksrminecraft.RangAPI.RangAPI
 ```
 
 ## Loading Plugin instance
 
 ```java
- import ch.ksrminecraft.RangAPI;
+ import ch.ksrminecraft.RangAPI.RangAPI;
 
 // Credentials to the Points DB
 RangAPI api = new RangAPI(String url, String user, String pass);

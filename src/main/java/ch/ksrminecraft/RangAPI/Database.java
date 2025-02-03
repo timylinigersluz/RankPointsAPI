@@ -1,4 +1,4 @@
-package ch.ksrminecraft;
+package ch.ksrminecraft.RangAPI;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
