@@ -13,8 +13,8 @@ Add the dependency
 ```xml
 <dependency>
   <groupId>com.github.Samhuwsluz</groupId>
-  <artifactId>PointsAPI</artifactId>
-  <version>v0.0.1</version>
+  <artifactId>RankPointsAPI</artifactId>
+  <version>v0.0.3</version>
 </dependency>
 ```
 
