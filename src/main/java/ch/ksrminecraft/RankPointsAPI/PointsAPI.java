@@ -1,18 +1,19 @@
-package ch.ksrminecraft.RangAPI;
+package ch.ksrminecraft.RankPointsAPI;
+
 
 import java.sql.Connection;
 import java.util.UUID;
 
-public class RangAPI {
+public class PointsAPI {
     Database db;
     Connection con;
-    PointsAPI api;
+    DatabaseAPI api;
 
-    public RangAPI(String url, String user, String pass) {
+    public PointsAPI(String url, String user, String pass) {
         this.db = new Database();
         db.connect(url, user, pass);
         this.con = db.getConnection();
-        this.api = new PointsAPI(con);
+        this.api = new DatabaseAPI(con);
     }
 
     /*

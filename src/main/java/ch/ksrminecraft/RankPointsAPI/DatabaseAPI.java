@@ -1,12 +1,12 @@
-package ch.ksrminecraft.RangAPI;
+package ch.ksrminecraft.RankPointsAPI;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
-public class PointsAPI {
+public class DatabaseAPI {
     Connection connection;
-    public PointsAPI(Connection conn) {
+    public DatabaseAPI(Connection conn) {
         connection = conn;
     }
     public int SQLgetInt(String command) {
