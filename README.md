@@ -22,16 +22,16 @@ Add the dependency
 ## Importing the API
 
 ```java
-import ch.ksrminecraft.RankPointsAPI.RangAPI
+import ch.ksrminecraft.RankPointsAPI.PointsAPI
 ```
 
 ## Loading Plugin instance
 
 ```java
- import ch.ksrminecraft.RankPointsAPI.RangAPI;
+ import ch.ksrminecraft.RankPointsAPI.PointsAPI;
 
 // Credentials to the Points DB
-RangAPI api = new RangAPI(String url, String user, String pass);
+PointsAPI api = new PointsAPI(String url, String user, String pass);
 ```
 
 
