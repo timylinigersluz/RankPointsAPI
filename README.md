@@ -109,4 +109,4 @@ int current = api.getPoints(playerUUID);
 
 ## 📄 License
 
-MIT – Use freely, modify responsibly.
+MIT – Use freely, modify responsibly...
