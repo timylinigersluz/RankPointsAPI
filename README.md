@@ -14,7 +14,7 @@ Add the dependency
 <dependency>
   <groupId>com.github.Samhuwsluz</groupId>
   <artifactId>RankPointsAPI</artifactId>
-  <version>v0.0.3</version>
+  <version>v0.0.5</version>
 </dependency>
 ```
 
