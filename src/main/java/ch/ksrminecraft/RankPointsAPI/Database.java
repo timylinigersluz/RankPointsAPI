@@ -16,7 +16,7 @@ public class Database {
             connection = DriverManager.getConnection(url, user, pass);
             System.out.println("[RankPointsAPI] MySQL connection established.");
 
-            // Ensure table exists
+            // Ensure if table exists
             try (PreparedStatement ps = connection.prepareStatement(
                     "CREATE TABLE IF NOT EXISTS points (" +
                             "UUID VARCHAR(36) PRIMARY KEY," +
