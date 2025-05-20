@@ -10,11 +10,13 @@ public class Database {
 
     public void connect(String url, String user, String pass) {
         try {
-            Class.forName("com.mysql.cj.jdbc.Driver"); // für JDBC sicherstellen
+            // Register shaded driver explicitly
+            Class.forName("ch.ksrminecraft.shaded.mysql.cj.jdbc.Driver");
+
             connection = DriverManager.getConnection(url, user, pass);
             System.out.println("[RankPointsAPI] MySQL connection established.");
 
-            // Stelle sicher, dass Tabelle existiert
+            // Ensure table exists
             try (PreparedStatement ps = connection.prepareStatement(
                     "CREATE TABLE IF NOT EXISTS points (" +
                             "UUID VARCHAR(36) PRIMARY KEY," +
