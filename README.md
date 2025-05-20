@@ -1,6 +1,23 @@
-# Installation (Maven):
-## Step1:
-Add the JitPack repository to your build file:
+# RankPointsAPI
+
+`RankPointsAPI` is a lightweight and flexible API to manage player points in a distributed Minecraft server environment using a shared MySQL database.  
+It provides simple methods to get, set and add points by UUID.
+
+---
+
+## ✅ Features
+
+- MySQL-based player point tracking
+- Auto-creates `points` table if missing
+- Safe operations (e.g. `INSERT IGNORE`, `ON DUPLICATE KEY`)
+- Minimal external dependencies
+- Ready for use in Velocity or Bukkit-like plugins
+
+---
+
+## 💡 Installation (Maven)
+
+### Step 1: Add JitPack Repository
 ```xml
 <repository>
   <id>jitpack.io</id>
@@ -8,51 +25,88 @@ Add the JitPack repository to your build file:
 </repository>
 ```
 
-## Step2:
-Add the dependency
+### Step 2: Add Dependency
 ```xml
 <dependency>
   <groupId>com.github.Samhuwsluz</groupId>
   <artifactId>RankPointsAPI</artifactId>
-  <version>v0.0.3</version>
+  <version>v0.0.4</version>
 </dependency>
 ```
 
-# API Usage
-## Importing the API
+---
 
+## 📦 API Usage
+
+### Import the API:
 ```java
-import ch.ksrminecraft.RankPointsAPI.PointsAPI
+import ch.ksrminecraft.RankPointsAPI.PointsAPI;
 ```
 
-## Loading Plugin instance
-
+### Instantiate the API:
 ```java
- import ch.ksrminecraft.RankPointsAPI.PointsAPI;
-
-// Credentials to the Points DB
-PointsAPI api = new PointsAPI(String url, String user, String pass);
+PointsAPI api = new PointsAPI("jdbc:mysql://host:port/database", "username", "password");
 ```
 
+---
 
-# API Reference
+## 🧩 API Reference
 
-## Get Points from User
+### ➕ Add Points
 ```java
-public int getPoints(UUID uuid);
+api.addPoints(UUID uuid, int delta);
+```
+Adds `delta` points to a player. Automatically inserts the user if not present.
+
+### ➖ Set Points
+```java
+api.setPoints(UUID uuid, int points);
+```
+Sets the total points for the user, overwriting any previous value.
+
+### 📊 Get Points
+```java
+int points = api.getPoints(UUID uuid);
+```
+Returns the current number of points for a player. Auto-inserts if necessary.
+
+---
+
+## 🛠️ MySQL Table Schema
+
+The plugin will automatically create the required table if it does not exist.
+
+```sql
+CREATE TABLE IF NOT EXISTS points (
+    UUID VARCHAR(36) PRIMARY KEY,
+    points INT NOT NULL DEFAULT 0
+);
 ```
 
-## Set Points from User
-```java
-public void setPoints(UUID uuid, int points);
+> ✅ Optional: Add timestamp column if desired (not used by API directly):
+```sql
+ALTER TABLE points ADD COLUMN time TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP;
 ```
 
-## Add Points to User
+---
+
+## 🧪 Example
+
 ```java
-public void addPoints(UUID uuid, int delta);
+UUID playerUUID = UUID.fromString("xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx");
+api.addPoints(playerUUID, 5);
+int current = api.getPoints(playerUUID);
 ```
 
-# Configuration (Plugin)
-## DB-Schema
-The Database should have a **Table** called **points**
-This Table must have the Fields: **UUID:text, points:int(11), time:timestamp**
+---
+
+## 🔐 Notes
+
+- Ensure the MySQL user has `INSERT`, `UPDATE`, `SELECT` rights on the database.
+- The shaded driver class used: `ch.ksrminecraft.shaded.mysql.cj.jdbc.Driver`
+
+---
+
+## 📄 License
+
+MIT – Use freely, modify responsibly.
