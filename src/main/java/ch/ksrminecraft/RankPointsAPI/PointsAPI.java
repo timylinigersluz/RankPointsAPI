@@ -26,7 +26,10 @@ public class PointsAPI {
      */
     public void setPoints(UUID uuid, int points) {
         if (!isConnected()) return;
-        api.SQLUpdate("UPDATE points SET points = " + points + " WHERE UUID = '" + uuid + "'");
+
+        // Insert or update if exists
+        api.SQLUpdate("INSERT INTO points (UUID, points) VALUES ('" + uuid + "', " + points + ") " +
+                "ON DUPLICATE KEY UPDATE points = " + points);
     }
 
     /**
@@ -35,9 +38,10 @@ public class PointsAPI {
      */
     public void addPoints(UUID uuid, int delta) {
         if (!isConnected()) return;
-        int current = api.SQLgetInt("SELECT points FROM points WHERE UUID = '" + uuid + "'");
-        int updated = current + delta;
-        api.SQLUpdate("UPDATE points SET points = " + updated + " WHERE UUID = '" + uuid + "'");
+
+        // Safe insert with no overwrite, then update
+        api.SQLUpdate("INSERT IGNORE INTO points (UUID, points) VALUES ('" + uuid + "', 0)");
+        api.SQLUpdate("UPDATE points SET points = points + " + delta + " WHERE UUID = '" + uuid + "'");
     }
 
     /**
@@ -45,6 +49,10 @@ public class PointsAPI {
      */
     public int getPoints(UUID uuid) {
         if (!isConnected()) return 0;
+
+        // Ensure player is registered
+        api.SQLUpdate("INSERT IGNORE INTO points (UUID, points) VALUES ('" + uuid + "', 0)");
+
         return api.SQLgetInt("SELECT points FROM points WHERE UUID = '" + uuid + "'");
     }
 
