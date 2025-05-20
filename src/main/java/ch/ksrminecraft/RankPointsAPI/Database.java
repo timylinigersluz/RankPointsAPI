@@ -2,6 +2,7 @@ package ch.ksrminecraft.RankPointsAPI;
 
 import java.sql.Connection;
 import java.sql.DriverManager;
+import java.sql.PreparedStatement;
 import java.sql.SQLException;
 
 public class Database {
@@ -9,17 +10,25 @@ public class Database {
 
     public void connect(String url, String user, String pass) {
         try {
-            // optional, aber helpful for db and debug
-            Class.forName("com.mysql.cj.jdbc.Driver");
-
+            Class.forName("com.mysql.cj.jdbc.Driver"); // für JDBC sicherstellen
             connection = DriverManager.getConnection(url, user, pass);
-            System.out.println("[RankPointsAPI] MySQL connection established successfully.");
+            System.out.println("[RankPointsAPI] MySQL connection established.");
+
+            // Stelle sicher, dass Tabelle existiert
+            try (PreparedStatement ps = connection.prepareStatement(
+                    "CREATE TABLE IF NOT EXISTS points (" +
+                            "UUID VARCHAR(36) PRIMARY KEY," +
+                            "points INT NOT NULL DEFAULT 0)"
+            )) {
+                ps.executeUpdate();
+                System.out.println("[RankPointsAPI] Table 'points' checked/created.");
+            }
 
         } catch (ClassNotFoundException e) {
             System.err.println("[RankPointsAPI] MySQL Driver not found.");
             e.printStackTrace();
         } catch (SQLException e) {
-            System.err.println("[RankPointsAPI] Failed to connect to the database.");
+            System.err.println("[RankPointsAPI] Connection failed: " + e.getMessage());
             e.printStackTrace();
         }
     }
