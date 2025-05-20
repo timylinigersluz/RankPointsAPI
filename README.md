@@ -30,7 +30,7 @@ It provides simple methods to get, set and add points by UUID.
 <dependency>
   <groupId>com.github.Samhuwsluz</groupId>
   <artifactId>RankPointsAPI</artifactId>
-  <version>v0.0.4</version>
+  <version>v0.0.5</version>
 </dependency>
 ```
 
