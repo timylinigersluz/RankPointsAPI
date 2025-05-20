@@ -1,42 +1,61 @@
 package ch.ksrminecraft.RankPointsAPI;
 
-
 import java.sql.Connection;
 import java.util.UUID;
 
 public class PointsAPI {
-    Database db;
-    Connection con;
-    DatabaseAPI api;
+    private final Database db;
+    private final Connection con;
+    private final DatabaseAPI api;
 
     public PointsAPI(String url, String user, String pass) {
         this.db = new Database();
-        db.connect(url, user, pass);
+        this.db.connect(url, user, pass);
         this.con = db.getConnection();
+
+        if (this.con == null) {
+            throw new IllegalStateException("[RankPointsAPI] Connection is null – check DB credentials or URL.");
+        }
+
         this.api = new DatabaseAPI(con);
     }
 
-    /*
-    Set the points from a specific Player to any given amount
-    Not recommended for regular Use. Use addPoints instead
+    /**
+     * Sets the points of a specific player to the given amount.
+     * Use this only for hard overwrites.
      */
-    public void setPoints(UUID uuid, int points){
-        api.SQLUpdate("Update points set points = " + points + " where UUID = ' " + uuid  + "'");
+    public void setPoints(UUID uuid, int points) {
+        if (!isConnected()) return;
+        api.SQLUpdate("UPDATE points SET points = " + points + " WHERE UUID = '" + uuid + "'");
     }
-    /*
-    Add a number of Points to the total Score of a specified Player
-    delta can be negative for points subtraction
+
+    /**
+     * Adds a number of points to the player’s total score.
+     * Negative values will subtract points.
      */
-    public void addPoints(UUID uuid, int delta){
-        int points = api.SQLgetInt("Select points from points where UUID = ' " + uuid + "'");
-        int newPoints = points + delta;
-        api.SQLUpdate("Update points set points = " + newPoints + " where UUID = ' " + uuid + "'");
+    public void addPoints(UUID uuid, int delta) {
+        if (!isConnected()) return;
+        int current = api.SQLgetInt("SELECT points FROM points WHERE UUID = '" + uuid + "'");
+        int updated = current + delta;
+        api.SQLUpdate("UPDATE points SET points = " + updated + " WHERE UUID = '" + uuid + "'");
     }
-    /*
-    Returns the current Points score from a given Player
+
+    /**
+     * Returns the current point total for the given player.
      */
-    public int getPoints(UUID uuid){
-        int points = api.SQLgetInt("Select points from points where UUID = ' " + uuid + "'");
-        return points;
+    public int getPoints(UUID uuid) {
+        if (!isConnected()) return 0;
+        return api.SQLgetInt("SELECT points FROM points WHERE UUID = '" + uuid + "'");
+    }
+
+    /**
+     * Checks if the database connection is active.
+     */
+    private boolean isConnected() {
+        if (this.con == null) {
+            System.err.println("[RankPointsAPI] No active database connection.");
+            return false;
+        }
+        return true;
     }
 }
