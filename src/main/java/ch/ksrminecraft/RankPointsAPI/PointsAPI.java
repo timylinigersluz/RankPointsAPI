@@ -1,6 +1,9 @@
 package ch.ksrminecraft.RankPointsAPI;
 
 import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.UUID;
 
 public class PointsAPI {
@@ -20,45 +23,29 @@ public class PointsAPI {
         this.api = new DatabaseAPI(con);
     }
 
-    /**
-     * Sets the points of a specific player to the given amount.
-     * Use this only for hard overwrites.
-     */
     public void setPoints(UUID uuid, int points) {
         if (!isConnected()) return;
+        if (isStaff(uuid)) return;
 
-        // Insert or update if exists
         api.SQLUpdate("INSERT INTO points (UUID, points) VALUES ('" + uuid + "', " + points + ") " +
                 "ON DUPLICATE KEY UPDATE points = " + points);
     }
 
-    /**
-     * Adds a number of points to the player’s total score.
-     * Negative values will subtract points.
-     */
     public void addPoints(UUID uuid, int delta) {
         if (!isConnected()) return;
+        if (isStaff(uuid)) return;
 
-        // Safe insert with no overwrite, then update
         api.SQLUpdate("INSERT IGNORE INTO points (UUID, points) VALUES ('" + uuid + "', 0)");
         api.SQLUpdate("UPDATE points SET points = points + " + delta + " WHERE UUID = '" + uuid + "'");
     }
 
-    /**
-     * Returns the current point total for the given player.
-     */
     public int getPoints(UUID uuid) {
         if (!isConnected()) return 0;
 
-        // Ensure player is registered
         api.SQLUpdate("INSERT IGNORE INTO points (UUID, points) VALUES ('" + uuid + "', 0)");
-
         return api.SQLgetInt("SELECT points FROM points WHERE UUID = '" + uuid + "'");
     }
 
-    /**
-     * Checks if the database connection is active.
-     */
     private boolean isConnected() {
         if (this.con == null) {
             System.err.println("[RankPointsAPI] No active database connection.");
@@ -66,11 +53,20 @@ public class PointsAPI {
         }
         return true;
     }
-    /**
-     * Returns the database connection...
-     */
+
+    private boolean isStaff(UUID uuid) {
+        String sql = "SELECT UUID FROM stafflist WHERE UUID = ?";
+        try (PreparedStatement ps = con.prepareStatement(sql)) {
+            ps.setString(1, uuid.toString());
+            ResultSet rs = ps.executeQuery();
+            return rs.next();
+        } catch (SQLException e) {
+            System.err.println("[RankPointsAPI] Failed to check stafflist: " + e.getMessage());
+            return false;
+        }
+    }
+
     public Connection getConnection() {
         return con;
     }
-
 }

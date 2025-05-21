@@ -1,14 +1,15 @@
 # RankPointsAPI
 
 `RankPointsAPI` is a lightweight and flexible API to manage player points in a distributed Minecraft server environment using a shared MySQL database.  
-It provides simple methods to get, set and add points by UUID.
+It provides simple methods to get, set and add points by UUID. Now also includes staff exclusions.
 
 ---
 
 ## ✅ Features
 
 - MySQL-based player point tracking
-- Auto-creates `points` table if missing
+- Auto-creates `points` and `stafflist` tables if missing
+- Automatically excludes players from `stafflist` from point updates
 - Safe operations (e.g. `INSERT IGNORE`, `ON DUPLICATE KEY`)
 - Minimal external dependencies
 - Ready for use in Velocity or Bukkit-like plugins
@@ -30,7 +31,7 @@ It provides simple methods to get, set and add points by UUID.
 <dependency>
   <groupId>com.github.Samhuwsluz</groupId>
   <artifactId>RankPointsAPI</artifactId>
-  <version>v0.0.4</version>
+  <version>v0.1.0</version>
 </dependency>
 ```
 
@@ -57,12 +58,14 @@ PointsAPI api = new PointsAPI("jdbc:mysql://host:port/database", "username", "pa
 api.addPoints(UUID uuid, int delta);
 ```
 Adds `delta` points to a player. Automatically inserts the user if not present.
+If the player is on the `stafflist`, no points are added.
 
 ### ➖ Set Points
 ```java
 api.setPoints(UUID uuid, int points);
 ```
 Sets the total points for the user, overwriting any previous value.
+If the player is on the `stafflist`, no change is made.
 
 ### 📊 Get Points
 ```java
@@ -74,18 +77,18 @@ Returns the current number of points for a player. Auto-inserts if necessary.
 
 ## 🛠️ MySQL Table Schema
 
-The plugin will automatically create the required table if it does not exist.
+The plugin will automatically create the required tables if they do not exist.
 
 ```sql
 CREATE TABLE IF NOT EXISTS points (
     UUID VARCHAR(36) PRIMARY KEY,
     points INT NOT NULL DEFAULT 0
 );
-```
 
-> ✅ Optional: Add timestamp column if desired (not used by API directly):
-```sql
-ALTER TABLE points ADD COLUMN time TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP;
+CREATE TABLE IF NOT EXISTS stafflist (
+    UUID VARCHAR(36) PRIMARY KEY,
+    name VARCHAR(50) NOT NULL
+);
 ```
 
 ---
