@@ -4,26 +4,31 @@ import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
+import java.util.logging.Logger;
 
 public class Database {
     private Connection connection;
+    private final Logger logger;
+    private final boolean debug;
+
+    public Database(Logger logger, boolean debug) {
+        this.logger = logger;
+        this.debug = debug;
+    }
 
     public void connect(String url, String user, String pass) {
         try {
-            // Register shaded driver explicitly
             Class.forName("com.mysql.cj.jdbc.Driver");
-
             connection = DriverManager.getConnection(url, user, pass);
-            System.out.println("[RankPointsAPI] MySQL connection established.");
+            logger.info("[RankPointsAPI] MySQL connection established.");
 
             ensurePointsTable();
             ensureStafflistTable();
-
         } catch (ClassNotFoundException e) {
-            System.err.println("[RankPointsAPI] MySQL Driver not found.");
+            logger.severe("[RankPointsAPI] MySQL Driver not found.");
             e.printStackTrace();
         } catch (SQLException e) {
-            System.err.println("[RankPointsAPI] Connection failed: " + e.getMessage());
+            logger.severe("[RankPointsAPI] Connection failed: " + e.getMessage());
             e.printStackTrace();
         }
     }
@@ -35,7 +40,7 @@ public class Database {
                         "points INT NOT NULL DEFAULT 0)"
         )) {
             ps.executeUpdate();
-            System.out.println("[RankPointsAPI] Table 'points' checked/created.");
+            if (debug) logger.info("[RankPointsAPI] Table 'points' checked/created.");
         }
     }
 
@@ -46,7 +51,7 @@ public class Database {
                         "name VARCHAR(50) NOT NULL)"
         )) {
             ps.executeUpdate();
-            System.out.println("[RankPointsAPI] Table 'stafflist' checked/created.");
+            if (debug) logger.info("[RankPointsAPI] Table 'stafflist' checked/created.");
         }
     }
 

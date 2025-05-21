@@ -5,14 +5,20 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.UUID;
+import java.util.logging.Logger;
 
 public class PointsAPI {
     private final Database db;
     private final Connection con;
     private final DatabaseAPI api;
+    private final Logger logger;
+    private final boolean debug;
 
-    public PointsAPI(String url, String user, String pass) {
-        this.db = new Database();
+    public PointsAPI(String url, String user, String pass, Logger logger, boolean debug) {
+        this.logger = logger;
+        this.debug = debug;
+
+        this.db = new Database(logger, debug);
         this.db.connect(url, user, pass);
         this.con = db.getConnection();
 
@@ -20,12 +26,15 @@ public class PointsAPI {
             throw new IllegalStateException("[RankPointsAPI] Connection is null – check DB credentials or URL.");
         }
 
-        this.api = new DatabaseAPI(con);
+        this.api = new DatabaseAPI(con, logger);
     }
 
     public void setPoints(UUID uuid, int points) {
         if (!isConnected()) return;
-        if (isStaff(uuid)) return;
+        if (isStaff(uuid)) {
+            if (debug) logger.info("[RankPointsAPI] Skipped setPoints for staff: " + uuid);
+            return;
+        }
 
         api.SQLUpdate("INSERT INTO points (UUID, points) VALUES ('" + uuid + "', " + points + ") " +
                 "ON DUPLICATE KEY UPDATE points = " + points);
@@ -33,7 +42,10 @@ public class PointsAPI {
 
     public void addPoints(UUID uuid, int delta) {
         if (!isConnected()) return;
-        if (isStaff(uuid)) return;
+        if (isStaff(uuid)) {
+            if (debug) logger.info("[RankPointsAPI] Skipped addPoints for staff: " + uuid);
+            return;
+        }
 
         api.SQLUpdate("INSERT IGNORE INTO points (UUID, points) VALUES ('" + uuid + "', 0)");
         api.SQLUpdate("UPDATE points SET points = points + " + delta + " WHERE UUID = '" + uuid + "'");
@@ -48,7 +60,7 @@ public class PointsAPI {
 
     private boolean isConnected() {
         if (this.con == null) {
-            System.err.println("[RankPointsAPI] No active database connection.");
+            logger.warning("[RankPointsAPI] No active database connection.");
             return false;
         }
         return true;
@@ -61,7 +73,7 @@ public class PointsAPI {
             ResultSet rs = ps.executeQuery();
             return rs.next();
         } catch (SQLException e) {
-            System.err.println("[RankPointsAPI] Failed to check stafflist: " + e.getMessage());
+            logger.warning("[RankPointsAPI] Failed to check stafflist: " + e.getMessage());
             return false;
         }
     }
