@@ -66,7 +66,9 @@ public class PointsAPI {
         }
         return true;
     }
-
+    /**
+     * Returns the database connection.
+     */
     public Connection getConnection() {
         return con;
     }
