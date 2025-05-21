@@ -11,7 +11,7 @@ public class Database {
     public void connect(String url, String user, String pass) {
         try {
             // Register shaded driver explicitly
-            Class.forName("ch.ksrminecraft.shaded.mysql.cj.jdbc.Driver");
+            Class.forName("com.mysql.cj.jdbc.Driver");
 
             connection = DriverManager.getConnection(url, user, pass);
             System.out.println("[RankPointsAPI] MySQL connection established.");
