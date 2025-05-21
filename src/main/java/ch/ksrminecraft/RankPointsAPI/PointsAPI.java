@@ -66,4 +66,9 @@ public class PointsAPI {
         }
         return true;
     }
+
+    public Connection getConnection() {
+        return con;
+    }
+
 }
