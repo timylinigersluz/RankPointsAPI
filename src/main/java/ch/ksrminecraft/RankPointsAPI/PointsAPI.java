@@ -40,15 +40,16 @@ public class PointsAPI {
                 "ON DUPLICATE KEY UPDATE points = " + points);
     }
 
-    public void addPoints(UUID uuid, int delta) {
-        if (!isConnected()) return;
+    public boolean addPoints(UUID uuid, int delta) {
+        if (!isConnected()) return false;
         if (isStaff(uuid)) {
             if (debug) logger.info("[RankPointsAPI] Skipped addPoints for staff: " + uuid);
-            return;
+            return false;
         }
 
         api.SQLUpdate("INSERT IGNORE INTO points (UUID, points) VALUES ('" + uuid + "', 0)");
         api.SQLUpdate("UPDATE points SET points = points + " + delta + " WHERE UUID = '" + uuid + "'");
+        return true;
     }
 
     public int getPoints(UUID uuid) {
