@@ -1,3 +1,4 @@
+
 # RankPointsAPI
 
 `RankPointsAPI` is a lightweight and flexible API to manage player points in a distributed Minecraft server environment using a shared MySQL database.  
@@ -46,7 +47,14 @@ import ch.ksrminecraft.RankPointsAPI.PointsAPI;
 
 ### Instantiate the API:
 ```java
-PointsAPI api = new PointsAPI("jdbc:mysql://host:port/database", "username", "password");
+Logger logger = getLogger(); // or any other logger
+PointsAPI api = new PointsAPI(
+    "jdbc:mysql://host:port/database",
+    "username",
+    "password",
+    logger,
+    true // enable debug
+);
 ```
 
 ---
@@ -81,14 +89,14 @@ The plugin will automatically create the required tables if they do not exist.
 
 ```sql
 CREATE TABLE IF NOT EXISTS points (
-    UUID VARCHAR(36) PRIMARY KEY,
+                                      UUID VARCHAR(36) PRIMARY KEY,
     points INT NOT NULL DEFAULT 0
-);
+    );
 
 CREATE TABLE IF NOT EXISTS stafflist (
-    UUID VARCHAR(36) PRIMARY KEY,
+                                         UUID VARCHAR(36) PRIMARY KEY,
     name VARCHAR(50) NOT NULL
-);
+    );
 ```
 
 ---

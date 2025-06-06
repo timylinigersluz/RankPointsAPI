@@ -10,13 +10,17 @@ import java.util.logging.Logger;
 public class PointsAPI {
     private final Database db;
     private final Connection con;
-    private final DatabaseAPI api;
+    private DatabaseAPI api;
     private final Logger logger;
     private final boolean debug;
+    private final String dbUrl, dbUser, dbPass;
 
     public PointsAPI(String url, String user, String pass, Logger logger, boolean debug) {
         this.logger = logger;
         this.debug = debug;
+        this.dbUrl = url;
+        this.dbUser = user;
+        this.dbPass = pass;
 
         this.db = new Database(logger, debug);
         this.db.connect(url, user, pass);
@@ -30,6 +34,7 @@ public class PointsAPI {
     }
 
     public void setPoints(UUID uuid, int points) {
+        ensureConnection();
         if (!isConnected()) return;
         if (isStaff(uuid)) {
             if (debug) logger.info("[RankPointsAPI] Skipped setPoints for staff: " + uuid);
@@ -41,6 +46,7 @@ public class PointsAPI {
     }
 
     public boolean addPoints(UUID uuid, int delta) {
+        ensureConnection();
         if (!isConnected()) return false;
         if (isStaff(uuid)) {
             if (debug) logger.info("[RankPointsAPI] Skipped addPoints for staff: " + uuid);
@@ -53,6 +59,7 @@ public class PointsAPI {
     }
 
     public int getPoints(UUID uuid) {
+        ensureConnection();
         if (!isConnected()) return 0;
 
         api.SQLUpdate("INSERT IGNORE INTO points (UUID, points) VALUES ('" + uuid + "', 0)");
@@ -81,5 +88,17 @@ public class PointsAPI {
 
     public Connection getConnection() {
         return con;
+    }
+
+    private void ensureConnection() {
+        try {
+            if (con == null || con.isClosed() || !con.isValid(2)) {
+                logger.warning("[RankPointsAPI] Lost DB connection – reconnecting...");
+                db.connect(dbUrl, dbUser, dbPass); // du brauchst Felder für diese Strings
+                this.api = new DatabaseAPI(db.getConnection(), logger);
+            }
+        } catch (SQLException e) {
+            logger.severe("[RankPointsAPI] DB reconnect failed: " + e.getMessage());
+        }
     }
 }
