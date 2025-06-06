@@ -90,6 +90,7 @@ public class PointsAPI {
         return con;
     }
 
+
     private void ensureConnection() {
         try {
             if (con == null || con.isClosed() || !con.isValid(2)) {
