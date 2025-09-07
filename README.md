@@ -30,9 +30,9 @@ It provides simple methods to get, set and add points by UUID. Now also includes
 ### Step 2: Add Dependency
 ```xml
 <dependency>
-  <groupId>com.github.Samhuwsluz</groupId>
+  <groupId>com.github.timylinigersluz</groupId>
   <artifactId>RankPointsAPI</artifactId>
-  <version>v0.1.5</version>
+  <version>v0.0.1</version>
 </dependency>
 ```
 
