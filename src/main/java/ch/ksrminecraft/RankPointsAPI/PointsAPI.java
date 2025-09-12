@@ -14,7 +14,7 @@ public class PointsAPI {
     private final boolean debug;
 
     private final DataSource ds;
-    private final ch.ksrminecraft.RankPointsAPI.JdbcPointsService service;
+    private final ch.ksrminecraft.RankPointsAPI.db.JdbcPointsService service;
 
     public PointsAPI(String jdbcUrl, String user, String pass, Logger logger, boolean debug) {
         this.logger = logger != null ? logger : Logger.getLogger("RankPointsAPI");
@@ -27,7 +27,7 @@ public class PointsAPI {
             this.logger.log(Level.SEVERE, "[RankPointsAPI] Failed to ensure schema", e);
             throw new RuntimeException(e);
         }
-        this.service = new ch.ksrminecraft.RankPointsAPI.JdbcPointsService(ds);
+        this.service = new ch.ksrminecraft.RankPointsAPI.db.JdbcPointsService(ds);
     }
 
     public void addPoints(UUID uuid, int delta) {

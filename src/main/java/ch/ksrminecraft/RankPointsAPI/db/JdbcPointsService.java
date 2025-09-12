@@ -1,4 +1,4 @@
-package ch.ksrminecraft.RankPointsAPI;
+package ch.ksrminecraft.RankPointsAPI.db;
 
 import javax.sql.DataSource;
 import java.sql.*;
