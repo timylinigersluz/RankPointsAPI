@@ -22,7 +22,7 @@ public final class SchemaInitializer {
           name VARCHAR(50) NOT NULL
         )
       """);
-            if (logger != null) logger.info("[RankPointsAPI] Tables ensured.");
+            if (logger != null) logger.info("Tables ensured.");
         }
     }
 }

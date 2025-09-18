@@ -20,15 +20,15 @@ public class Database {
         try {
             Class.forName("com.mysql.cj.jdbc.Driver");
             connection = DriverManager.getConnection(url, user, pass);
-            logger.info("[RankPointsAPI] MySQL connection established.");
+            logger.info("MySQL connection established.");
 
             ensurePointsTable();
             ensureStafflistTable();
         } catch (ClassNotFoundException e) {
-            logger.severe("[RankPointsAPI] MySQL Driver not found.");
+            logger.severe("MySQL Driver not found.");
             e.printStackTrace();
         } catch (SQLException e) {
-            logger.severe("[RankPointsAPI] Connection failed: " + e.getMessage());
+            logger.severe("Connection failed: " + e.getMessage());
             e.printStackTrace();
         }
     }
@@ -40,7 +40,7 @@ public class Database {
                         "points INT NOT NULL DEFAULT 0)"
         )) {
             ps.executeUpdate();
-            if (debug) logger.info("[RankPointsAPI] Table 'points' checked/created.");
+            if (debug) logger.info("Table 'points' checked/created.");
         }
     }
 
@@ -51,7 +51,7 @@ public class Database {
                         "name VARCHAR(50) NOT NULL)"
         )) {
             ps.executeUpdate();
-            if (debug) logger.info("[RankPointsAPI] Table 'stafflist' checked/created.");
+            if (debug) logger.info("Table 'stafflist' checked/created.");
         }
     }
 

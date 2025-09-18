@@ -26,7 +26,7 @@ public class DatabaseAPI {
                 return rs.getInt("points");
             }
         } catch (SQLException e) {
-            logger.warning("[RankPointsAPI] SQLgetInt failed: " + e.getMessage());
+            logger.warning("SQLgetInt failed: " + e.getMessage());
             e.printStackTrace();
         }
         return 0;
@@ -36,7 +36,7 @@ public class DatabaseAPI {
         try (PreparedStatement ps = connection.prepareStatement(query)) {
             ps.executeUpdate();
         } catch (SQLException e) {
-            logger.warning("[RankPointsAPI] SQLUpdate failed: " + e.getMessage());
+            logger.warning("SQLUpdate failed: " + e.getMessage());
             e.printStackTrace();
         }
     }

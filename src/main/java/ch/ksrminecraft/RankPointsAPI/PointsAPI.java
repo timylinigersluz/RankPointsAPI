@@ -24,7 +24,7 @@ public class PointsAPI {
         try {
             SchemaInitializer.ensure(ds, this.logger);
         } catch (Exception e) {
-            this.logger.log(Level.SEVERE, "[RankPointsAPI] Failed to ensure schema", e);
+            this.logger.log(Level.SEVERE, "Failed to ensure schema", e);
             throw new RuntimeException(e);
         }
         this.service = new ch.ksrminecraft.RankPointsAPI.db.JdbcPointsService(ds);
@@ -33,7 +33,7 @@ public class PointsAPI {
     public void addPoints(UUID uuid, int delta) {
         try {
             service.addPoints(uuid, delta);
-            if (debug) logger.info(() -> "[RankPointsAPI] addPoints " + uuid + " +" + delta);
+            if (debug) logger.info(() -> "addPoints " + uuid + " +" + delta);
         } catch (SQLException e) {
             logger.log(Level.SEVERE, "addPoints failed for " + uuid, e);
         }
@@ -42,7 +42,7 @@ public class PointsAPI {
     public void setPoints(UUID uuid, int points) {
         try {
             service.setPoints(uuid, points);
-            if (debug) logger.info(() -> "[RankPointsAPI] setPoints " + uuid + " = " + points);
+            if (debug) logger.info(() -> "setPoints " + uuid + " = " + points);
         } catch (SQLException e) {
             logger.log(Level.SEVERE, "setPoints failed for " + uuid, e);
         }
@@ -51,7 +51,7 @@ public class PointsAPI {
     public int getPoints(UUID uuid) {
         try {
             int p = service.getPoints(uuid);
-            if (debug) logger.info(() -> "[RankPointsAPI] getPoints " + uuid + " -> " + p);
+            if (debug) logger.info(() -> "getPoints " + uuid + " -> " + p);
             return p;
         } catch (SQLException e) {
             logger.log(Level.SEVERE, "getPoints failed for " + uuid, e);
