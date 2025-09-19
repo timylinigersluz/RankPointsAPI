@@ -1,25 +1,38 @@
-
 # RankPointsAPI
 
-`RankPointsAPI` is a lightweight and flexible API to manage player points in a distributed Minecraft server environment using a shared MySQL database.  
-It provides simple methods to get, set and add points by UUID. Now also includes staff exclusions.
+**RankPointsAPI** ist eine leichtgewichtige und flexible Java-API, um Spielerpunkte in einem verteilten Minecraft-Servernetzwerk (Velocity + Paper-Server) zentral in einer **MySQL-Datenbank** zu verwalten.  
+Die API stellt einfache Methoden bereit, um Punkte anhand der Spieler-UUID zu **lesen**, **setzen** und **hinzuzufügen**.  
+Zusätzlich gibt es einen **konfigurierbaren Staff-Ausschluss**: Entwickler können selbst festlegen, ob Staff-Mitglieder Punkte sammeln dürfen oder nicht.
+
+---
+
+## 💡 Anwendungsfall (Use Case)
+
+- Alle Punkte (z. B. aus SMP, Minigames oder Proxy-Spielzeit) werden **global synchronisiert**.
+- Typische Punktequellen:
+    - SMP: Blockabbau/-platzierung, Advancements, Endboss-Kills
+    - Proxy: Spielzeit (z. B. 1 Punkt pro Minute)
+    - Minigames: Siege, Platzierungen, Rekorde
+- Staff-Mitglieder (Owner, Admins, Mods) stehen in einer separaten `stafflist`.
+
+**Neu:** Du kannst beim Erstellen der API entscheiden, ob Staff **Punkte bekommt oder nicht**.
 
 ---
 
 ## ✅ Features
 
-- MySQL-based player point tracking
-- Auto-creates `points` and `stafflist` tables if missing
-- Automatically excludes players from `stafflist` from point updates
-- Safe operations (e.g. `INSERT IGNORE`, `ON DUPLICATE KEY`)
-- Minimal external dependencies
-- Ready for use in Velocity or Bukkit-like plugins
+- MySQL-basierte Speicherung (Tabelle `points`)
+- Automatische Erstellung von Tabellen (`points` und `stafflist`)
+- Staff-Ausschluss optional (`excludeStaff = true/false`)
+- Sichere SQL-Abfragen (`PreparedStatement`, `ON DUPLICATE KEY`)
+- Kompatibel mit Velocity- und Bukkit/Paper-Plugins
+- Stabile MySQL-Verbindungen durch HikariCP-Pooling
 
 ---
 
-## 💡 Installation (Maven)
+## 📦 Installation in dein Plugin
 
-### Step 1: Add JitPack Repository
+### Schritt 1: JitPack-Repository hinzufügen
 ```xml
 <repository>
   <id>jitpack.io</id>
@@ -27,7 +40,7 @@ It provides simple methods to get, set and add points by UUID. Now also includes
 </repository>
 ```
 
-### Step 2: Add Dependency
+### Schritt 2: Dependency einbinden
 ```xml
 <dependency>
   <groupId>com.github.timylinigersluz</groupId>
@@ -38,70 +51,65 @@ It provides simple methods to get, set and add points by UUID. Now also includes
 
 ---
 
-## 📦 API Usage
+## 📖 Verwendung im Code
 
-### Import the API:
+### API importieren
 ```java
 import ch.ksrminecraft.RankPointsAPI.PointsAPI;
 ```
 
-### Instantiate the API:
+### API instanziieren
 ```java
-Logger logger = getLogger(); // or any other logger
+Logger logger = getLogger();
 PointsAPI api = new PointsAPI(
     "jdbc:mysql://host:port/database",
     "username",
     "password",
     logger,
-    true // enable debug
+    true,   // Debug-Modus
+    true    // Staff ausgeschlossen (kein Punktesammeln für Staff)
 );
 ```
 
----
-
-## 🧩 API Reference
-
-### ➕ Add Points
+### Beispiel: Staff **nicht ausschliessen**
 ```java
-api.addPoints(UUID uuid, int delta);
+PointsAPI api = new PointsAPI(
+    "jdbc:mysql://host:port/database",
+    "username",
+    "password",
+    logger,
+    false,  // Debug aus
+    false   // Staff darf Punkte sammeln
+);
 ```
-Adds `delta` points to a player. Automatically inserts the user if not present.
-If the player is on the `stafflist`, no points are added.
 
-### ➖ Set Points
-```java
-api.setPoints(UUID uuid, int points);
-```
-Sets the total points for the user, overwriting any previous value.
-If the player is on the `stafflist`, no change is made.
-
-### 📊 Get Points
-```java
-int points = api.getPoints(UUID uuid);
-```
-Returns the current number of points for a player. Auto-inserts if necessary.
+### Methoden
+- `api.addPoints(UUID, int)` → Punkte hinzufügen
+- `api.setPoints(UUID, int)` → Punkte setzen (überschreibt)
+- `api.getPoints(UUID)` → Punktestand abfragen
 
 ---
 
-## 🛠️ MySQL Table Schema
-
-The plugin will automatically create the required tables if they do not exist.
+## 🛠️ Datenbankschema
 
 ```sql
 CREATE TABLE IF NOT EXISTS points (
-                                      UUID VARCHAR(36) PRIMARY KEY,
-    points INT NOT NULL DEFAULT 0
-    );
+  UUID VARCHAR(36) PRIMARY KEY,
+  points INT NOT NULL DEFAULT 0
+);
 
 CREATE TABLE IF NOT EXISTS stafflist (
-                                         UUID VARCHAR(36) PRIMARY KEY,
-    name VARCHAR(50) NOT NULL
-    );
+  UUID VARCHAR(36) PRIMARY KEY,
+  name VARCHAR(50) NOT NULL
+);
 ```
+
+- Steht eine UUID in `stafflist`, wird sie **nur berücksichtigt**, wenn `excludeStaff = true`.
+- Mit `excludeStaff = false` verhält sich Staff wie normale Spieler.
 
 ---
 
-## 🧪 Example
+## 🧑‍💻 Beispiel
 
 ```java
 UUID playerUUID = UUID.fromString("xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx");
@@ -111,13 +119,18 @@ int current = api.getPoints(playerUUID);
 
 ---
 
-## 🔐 Notes
+## 🔍 Erklärung: Was bedeutet „shaded“?
 
-- Ensure the MySQL user has `INSERT`, `UPDATE`, `SELECT` rights on the database.
-- The shaded driver class used: `ch.ksrminecraft.shaded.mysql.cj.jdbc.Driver`
+- **Shading** bedeutet, dass du externe Bibliotheken (z. B. MySQL-Treiber) **direkt in dein Plugin-JAR einpackst**.
+- Vorteil: Dein Plugin funktioniert unabhängig.
+- Nachteil: Die JAR wird größer, und es braucht Relocation, um Versionskonflikte zu vermeiden.
+
+Wenn du **nicht shadest**, muss der MySQL-Treiber als **externe Abhängigkeit** auf dem Server verfügbar sein.  
+Wenn du **shadest**, musst du im Build-Tool (z. B. Maven Shade Plugin) darauf achten, die Pakete umzubenennen und SPI-Dateien korrekt zusammenzuführen.
 
 ---
 
-## 📄 License
+## 📜 Lizenz
 
-MIT – Use freely, modify responsibly...
+MIT – frei verwendbar und anpassbar.  
+Bitte nenne die Quelle, wenn du das Plugin weiterverwendest.
