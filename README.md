@@ -40,12 +40,12 @@ Zusätzlich gibt es einen **konfigurierbaren Staff-Ausschluss**: Entwickler kön
 </repository>
 ```
 
-### Schritt 2: Dependency einbinden
+### Schritt 2: Dependency einbinden (vX.X.X durch die aktuellste Version ersetzen)
 ```xml
 <dependency>
   <groupId>com.github.timylinigersluz</groupId>
   <artifactId>RankPointsAPI</artifactId>
-  <version>v0.0.1</version>
+  <version>vX.X.X</version> //hier die Version ersetzen!
 </dependency>
 ```
 
