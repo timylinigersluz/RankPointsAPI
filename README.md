@@ -2,7 +2,8 @@
 
 **RankPointsAPI** ist eine leichtgewichtige und flexible Java-API, um Spielerpunkte in einem verteilten Minecraft-Servernetzwerk (Velocity + Paper-Server) zentral in einer **MySQL-Datenbank** zu verwalten.  
 Die API stellt einfache Methoden bereit, um Punkte anhand der Spieler-UUID zu **lesen**, **setzen** und **hinzuzufügen**.  
-Zusätzlich gibt es einen **konfigurierbaren Staff-Ausschluss**: Entwickler können selbst festlegen, ob Staff-Mitglieder Punkte sammeln dürfen oder nicht.
+Zusätzlich gibt es einen **konfigurierbaren Staff-Ausschluss**: Entwickler können festlegen, ob Staff-Mitglieder Punkte sammeln dürfen oder nicht.  
+Neu unterstützt die API auch **AFK-Erkennung über EssentialsX**, sodass keine Punkte vergeben werden, wenn Spieler AFK sind (via Proxy-Sync).
 
 ---
 
@@ -14,19 +15,23 @@ Zusätzlich gibt es einen **konfigurierbaren Staff-Ausschluss**: Entwickler kön
     - Proxy: Spielzeit (z. B. 1 Punkt pro Minute)
     - Minigames: Siege, Platzierungen, Rekorde
 - Staff-Mitglieder (Owner, Admins, Mods) stehen in einer separaten `stafflist`.
+- EssentialsX auf Paper-Servern meldet automatisch den AFK-Status an den Proxy.
 
-**Neu:** Du kannst beim Erstellen der API entscheiden, ob Staff **Punkte bekommt oder nicht**.
+**Neu:**
+- Optionaler EssentialsX-Hook: sendet AFK-Status automatisch an das RankProxyPlugin (`rankproxy:afk`).
+- AFK-Spieler erhalten keine Punkte, bis sie wieder aktiv sind.
 
 ---
 
 ## ✅ Features
 
-- MySQL-basierte Speicherung (Tabelle `points`)
-- Automatische Erstellung von Tabellen (`points` und `stafflist`)
+- MySQL-basierte Speicherung (`points` + `stafflist`)
+- Automatische Tabellenerstellung
 - Staff-Ausschluss optional (`excludeStaff = true/false`)
-- Sichere SQL-Abfragen (`PreparedStatement`, `ON DUPLICATE KEY`)
-- Kompatibel mit Velocity- und Bukkit/Paper-Plugins
-- Stabile MySQL-Verbindungen durch HikariCP-Pooling
+- Sicher dank `PreparedStatement` und `ON DUPLICATE KEY`
+- Kompatibel mit Velocity, Bukkit und Paper
+- Stabil durch HikariCP-Connection-Pooling
+- AFK-Bridge mit EssentialsX (automatisch aktiviert, falls installiert)
 
 ---
 
@@ -40,12 +45,27 @@ Zusätzlich gibt es einen **konfigurierbaren Staff-Ausschluss**: Entwickler kön
 </repository>
 ```
 
-### Schritt 2: Dependency einbinden (vX.X.X durch die aktuellste Version ersetzen)
+### Schritt 2: Dependency einbinden (vX.X.X durch Version ersetzen)
 ```xml
 <dependency>
   <groupId>com.github.timylinigersluz</groupId>
   <artifactId>RankPointsAPI</artifactId>
-  <version>vX.X.X</version> //hier die Version ersetzen!
+  <version>vX.X.X</version>
+</dependency>
+```
+
+### Schritt 3: EssentialsX-Repository (für AFK-Funktion, optional)
+```xml
+<repository>
+  <id>essentialsx-repo</id>
+  <url>https://repo.essentialsx.net/releases/</url>
+</repository>
+
+<dependency>
+  <groupId>net.essentialsx</groupId>
+  <artifactId>EssentialsX</artifactId>
+  <version>2.20.1</version>
+  <scope>provided</scope>
 </dependency>
 ```
 
@@ -90,6 +110,26 @@ PointsAPI api = new PointsAPI(
 
 ---
 
+## ⚙️ EssentialsX-AFK-Bridge
+
+Wenn EssentialsX installiert ist, wird automatisch der AFK-Status an das Proxy-Plugin gesendet.  
+Dies geschieht über den Channel `rankproxy:afk`.
+
+```java
+@EventHandler
+public void onAfkChange(AfkStatusChangeEvent event) {
+    Player player = event.getAffected().getBase();
+    boolean isAfk = event.getValue();
+
+    String msg = player.getUniqueId() + ";" + isAfk;
+    player.sendPluginMessage(this, "rankproxy:afk", msg.getBytes(StandardCharsets.UTF_8));
+}
+```
+
+Damit können Proxy-Plugins (wie RankProxyPlugin) erkennen, dass ein Spieler AFK ist.
+
+---
+
 ## 🛠️ Datenbankschema
 
 ```sql
@@ -104,8 +144,16 @@ CREATE TABLE IF NOT EXISTS stafflist (
 );
 ```
 
-- Steht eine UUID in `stafflist`, wird sie **nur berücksichtigt**, wenn `excludeStaff = true`.
-- Mit `excludeStaff = false` verhält sich Staff wie normale Spieler.
+---
+
+## 🧩 AFK-Integration
+
+| Komponente | Aufgabe |
+|-------------|----------|
+| **EssentialsX (Paper)** | Erkennt AFK-Spieler automatisch |
+| **RankPointsAPI** | Sendet AFK-Status über `rankproxy:afk` |
+| **RankProxyPlugin** | Empfängt Status und stoppt Punktevergabe |
+| **SchedulerManager** | Prüft AFK-Status, bevor Punkte vergeben werden |
 
 ---
 
@@ -121,12 +169,21 @@ int current = api.getPoints(playerUUID);
 
 ## 🔍 Erklärung: Was bedeutet „shaded“?
 
-- **Shading** bedeutet, dass du externe Bibliotheken (z. B. MySQL-Treiber) **direkt in dein Plugin-JAR einpackst**.
-- Vorteil: Dein Plugin funktioniert unabhängig.
-- Nachteil: Die JAR wird größer, und es braucht Relocation, um Versionskonflikte zu vermeiden.
+**Shading** = externe Libraries (z. B. MySQL-Treiber) werden in dein JAR eingebettet.  
+Das Plugin funktioniert dann autark, benötigt aber Paket-Relocation, um Versionskonflikte zu vermeiden.
 
-Wenn du **nicht shadest**, muss der MySQL-Treiber als **externe Abhängigkeit** auf dem Server verfügbar sein.  
-Wenn du **shadest**, musst du im Build-Tool (z. B. Maven Shade Plugin) darauf achten, die Pakete umzubenennen und SPI-Dateien korrekt zusammenzuführen.
+Wenn du nicht shadest, muss der MySQL-Treiber auf dem Server vorhanden sein.  
+Wenn du shadest, achte darauf, dass das Shade-Plugin die `META-INF/services` korrekt merged.
+
+---
+
+## 🧾 Changelog
+
+| Version    | Änderungen |
+|------------|-------------|
+| **v0.0.4** | ✨ EssentialsX-AFK-Bridge hinzugefügt (Paper → Proxy) |
+| **v0.0.2** | Stafflist-Feature hinzugefügt |
+| **v0.0.1** | Erste Version mit MySQL + HikariCP |
 
 ---
 
