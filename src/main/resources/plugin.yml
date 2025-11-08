@@ -1,0 +1,4 @@
+name: RankPointsAPI
+version: 0.0.4
+main: ch.ksrminecraft.RankPointsAPI.RankPointsPlugin
+api-version: 1.21
