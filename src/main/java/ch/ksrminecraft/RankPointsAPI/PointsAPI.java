@@ -3,6 +3,7 @@ package ch.ksrminecraft.RankPointsAPI;
 import ch.ksrminecraft.RankPointsAPI.db.HikariDataSourceFactory;
 import ch.ksrminecraft.RankPointsAPI.db.JdbcPointsService;
 import ch.ksrminecraft.RankPointsAPI.db.SchemaInitializer;
+import com.zaxxer.hikari.HikariDataSource;
 
 import javax.sql.DataSource;
 import java.sql.SQLException;
@@ -59,6 +60,19 @@ public class PointsAPI {
         } catch (SQLException e) {
             logger.log(Level.SEVERE, "getPoints failed for " + uuid, e);
             return 0;
+        }
+    }
+
+    public boolean isExcludeStaffEnabled() {
+        return excludeStaff;
+    }
+
+    public void close() {
+        if (ds instanceof HikariDataSource hikari && !hikari.isClosed()) {
+            hikari.close();
+            if (debug) {
+                logger.info("RankPointsAPI datasource closed.");
+            }
         }
     }
 }

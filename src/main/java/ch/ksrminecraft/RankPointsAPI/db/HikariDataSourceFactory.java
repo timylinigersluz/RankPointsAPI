@@ -15,19 +15,13 @@ public final class HikariDataSourceFactory {
         cfg.setUsername(user);
         cfg.setPassword(pass);
 
-        // Treiber
-        cfg.setDriverClassName("com.mysql.cj.jdbc.Driver");
-
-        // Poolgrössen (bei Bedarf anpassen)
         cfg.setMaximumPoolSize(10);
         cfg.setMinimumIdle(2);
 
-        // Timeouts
         cfg.setConnectionTimeout(5000);
         cfg.setIdleTimeout(600000);
         cfg.setMaxLifetime(1800000);
 
-        // MySQL-spezifische Optimierungen
         Properties dsProps = new Properties();
         dsProps.setProperty("cachePrepStmts", "true");
         dsProps.setProperty("prepStmtCacheSize", "250");

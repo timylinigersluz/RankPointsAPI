@@ -6,7 +6,7 @@
 
     <groupId>ch.ksrminecraft</groupId>
     <artifactId>RankPointsAPI</artifactId>
-    <version>v0.0.4</version>
+    <version>v0.0.5</version>
     <packaging>jar</packaging>
 
     <name>RankPointsAPI</name>
@@ -45,7 +45,9 @@
                 <executions>
                     <execution>
                         <phase>package</phase>
-                        <goals><goal>shade</goal></goals>
+                        <goals>
+                            <goal>shade</goal>
+                        </goals>
                         <configuration>
                             <createDependencyReducedPom>false</createDependencyReducedPom>
                             <relocations>
@@ -73,18 +75,40 @@
             <id>papermc-repo</id>
             <url>https://repo.papermc.io/repository/maven-public/</url>
         </repository>
+
         <repository>
             <id>essentialsx-repo</id>
             <url>https://repo.essentialsx.net/releases/</url>
         </repository>
+
+        <repository>
+            <id>placeholderapi</id>
+            <url>https://repo.helpch.at/releases/</url>
+        </repository>
     </repositories>
 
     <dependencies>
-        <!-- Paper API (nur zur Compile-Zeit, wird nicht ins JAR gepackt) -->
+        <!-- Paper API (nur Compile-Zeit) -->
         <dependency>
             <groupId>io.papermc.paper</groupId>
             <artifactId>paper-api</artifactId>
             <version>1.21.8-R0.1-SNAPSHOT</version>
+            <scope>provided</scope>
+        </dependency>
+
+        <!-- EssentialsX (nur Compile-Zeit) -->
+        <dependency>
+            <groupId>net.essentialsx</groupId>
+            <artifactId>EssentialsX</artifactId>
+            <version>2.20.1</version>
+            <scope>provided</scope>
+        </dependency>
+
+        <!-- PlaceholderAPI (nur Compile-Zeit) -->
+        <dependency>
+            <groupId>me.clip</groupId>
+            <artifactId>placeholderapi</artifactId>
+            <version>2.12.2</version>
             <scope>provided</scope>
         </dependency>
 
@@ -100,12 +124,6 @@
             <groupId>com.zaxxer</groupId>
             <artifactId>HikariCP</artifactId>
             <version>5.1.0</version>
-        </dependency>
-        <dependency>
-            <groupId>net.essentialsx</groupId>
-            <artifactId>EssentialsX</artifactId>
-            <version>2.20.1</version>
-            <scope>provided</scope>
         </dependency>
     </dependencies>
 </project>
