@@ -3,6 +3,7 @@ package ch.ksrminecraft.RankPointsAPI;
 import ch.ksrminecraft.RankPointsAPI.afk.EssentialsAfkBridge;
 import ch.ksrminecraft.RankPointsAPI.placeholder.RankPointsPlaceholder;
 import org.bukkit.Bukkit;
+import org.bukkit.plugin.ServicePriority;
 import org.bukkit.plugin.java.JavaPlugin;
 
 public class RankPointsPlugin extends JavaPlugin {
@@ -16,6 +17,7 @@ public class RankPointsPlugin extends JavaPlugin {
         getLogger().info("RankPointsAPI enabled.");
 
         setupInternalPointsApi();
+        registerRankPointsService();
         registerPlaceholder();
         registerAfkBridge();
     }
@@ -27,6 +29,8 @@ public class RankPointsPlugin extends JavaPlugin {
             rankPointsPlaceholder = null;
         }
 
+        unregisterRankPointsService();
+
         if (internalPointsApi != null) {
             internalPointsApi.close();
             internalPointsApi = null;
@@ -36,12 +40,6 @@ public class RankPointsPlugin extends JavaPlugin {
     }
 
     private void setupInternalPointsApi() {
-        boolean placeholderEnabled = getConfig().getBoolean("placeholder.enabled", true);
-        if (!placeholderEnabled) {
-            getLogger().info("Placeholder support disabled in config.");
-            return;
-        }
-
         String host = getConfig().getString("database.host", "");
         int port = getConfig().getInt("database.port", 3306);
         String database = getConfig().getString("database.name", "");
@@ -59,9 +57,31 @@ public class RankPointsPlugin extends JavaPlugin {
 
         try {
             internalPointsApi = new PointsAPI(jdbcUrl, username, password, getLogger(), debug, excludeStaff);
-            getLogger().info("Internal PointsAPI for placeholders initialized.");
+            getLogger().info("Internal PointsAPI initialized.");
         } catch (Exception e) {
-            getLogger().severe("Could not initialize internal PointsAPI for placeholders: " + e.getMessage());
+            getLogger().severe("Could not initialize internal PointsAPI: " + e.getMessage());
+        }
+    }
+
+    private void registerRankPointsService() {
+        if (internalPointsApi == null) {
+            getLogger().warning("RankPointsService was not registered because PointsAPI is unavailable.");
+            return;
+        }
+
+        getServer().getServicesManager().register(
+                RankPointsService.class,
+                internalPointsApi,
+                this,
+                ServicePriority.Normal
+        );
+        getLogger().info("RankPointsService registered for external plugins.");
+    }
+
+    private void unregisterRankPointsService() {
+        if (internalPointsApi != null) {
+            getServer().getServicesManager().unregister(RankPointsService.class, internalPointsApi);
+            getLogger().info("RankPointsService unregistered.");
         }
     }
 

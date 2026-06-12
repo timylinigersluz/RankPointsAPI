@@ -35,6 +35,67 @@ Neu unterstützt die API auch **AFK-Erkennung über EssentialsX**, sodass keine 
 
 ---
 
+## Nutzung als Serverplugin-Service
+
+Empfohlen ist die Nutzung von RankPointsAPI als zentrales Serverplugin.
+
+- RankPointsAPI muss als Plugin auf dem Paper-Server installiert sein.
+- Datenbank-Credentials werden nur in der `config.yml` von RankPointsAPI konfiguriert.
+- RankPointsAPI erstellt und verwaltet die Tabellen selbst.
+- Der Staff-Ausschluss bleibt zentral in RankPointsAPI.
+- Andere Plugins brauchen keine eigenen Datenbankdaten.
+
+Externe Plugins binden RankPointsAPI nur als Compile-Dependency ein, damit das Service-Interface bekannt ist, und holen die laufende Instanz über den Bukkit `ServicesManager`.
+
+### plugin.yml eines externen Plugins
+
+Für optionale Integrationen:
+
+```yaml
+softdepend: [RankPointsAPI]
+```
+
+Falls dein Plugin ohne RankPointsAPI nicht sinnvoll starten soll:
+
+```yaml
+depend: [RankPointsAPI]
+```
+
+### Beispiel: Punkte aus einem externen Plugin vergeben
+
+```java
+import ch.ksrminecraft.RankPointsAPI.RankPointsService;
+import org.bukkit.Bukkit;
+import org.bukkit.entity.Player;
+import org.bukkit.plugin.RegisteredServiceProvider;
+
+public void rewardPlayer(Player player) {
+    RegisteredServiceProvider<RankPointsService> provider =
+            Bukkit.getServicesManager().getRegistration(RankPointsService.class);
+
+    if (provider == null) {
+        getLogger().warning("RankPointsAPI service not available.");
+        return;
+    }
+
+    RankPointsService rankPoints = provider.getProvider();
+    rankPoints.addPoints(player.getUniqueId(), 10);
+}
+```
+
+Verfügbare Service-Methoden:
+
+- `addPoints(UUID, int)` -> Punkte hinzufügen. Negative Werte sind erlaubt und ziehen Punkte ab.
+- `removePoints(UUID, int)` -> Punkte entfernen.
+- `setPoints(UUID, int)` -> Punkte setzen.
+- `getPoints(UUID)` -> Punktestand abfragen. Gibt `0` zurück, falls kein Eintrag existiert oder die Abfrage fehlschlägt.
+
+SQL-Fehler werden von RankPointsAPI geloggt und nicht an externe Plugins weitergeworfen.
+
+Diese Schnittstelle reicht für Plugins wie AkzuwoFormulaOne oder FormulaBoatRacing aus: Das Rennplugin muss nur die Spieler-UUID und die zu vergebenden Punkte kennen, während RankPointsAPI Datenbankverbindung, Tabellenerstellung und Staff-Ausschluss übernimmt.
+
+---
+
 ## 📦 Installation in dein Plugin
 
 ### Schritt 1: JitPack-Repository hinzufügen
@@ -71,7 +132,9 @@ Neu unterstützt die API auch **AFK-Erkennung über EssentialsX**, sodass keine 
 
 ---
 
-## 📖 Verwendung im Code
+## 📖 Direkte Verwendung im Code
+
+Die direkte Instanziierung ist nur sinnvoll, wenn du RankPointsAPI bewusst als Library mit eigener Datenbankkonfiguration verwenden willst. Für Serverplugins ist der Bukkit-Service oben die empfohlene Variante.
 
 ### API importieren
 ```java
