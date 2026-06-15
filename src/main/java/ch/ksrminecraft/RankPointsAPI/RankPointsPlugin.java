@@ -6,6 +6,8 @@ import org.bukkit.Bukkit;
 import org.bukkit.plugin.ServicePriority;
 import org.bukkit.plugin.java.JavaPlugin;
 
+import java.util.logging.Level;
+
 public class RankPointsPlugin extends JavaPlugin {
 
     private PointsAPI internalPointsApi;
@@ -58,8 +60,8 @@ public class RankPointsPlugin extends JavaPlugin {
         try {
             internalPointsApi = new PointsAPI(jdbcUrl, username, password, getLogger(), debug, excludeStaff);
             getLogger().info("Internal PointsAPI initialized.");
-        } catch (Exception e) {
-            getLogger().severe("Could not initialize internal PointsAPI: " + e.getMessage());
+        } catch (RuntimeException e) {
+            getLogger().log(Level.SEVERE, "Could not initialize internal PointsAPI", e);
         }
     }
 

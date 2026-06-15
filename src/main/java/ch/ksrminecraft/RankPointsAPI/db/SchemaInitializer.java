@@ -2,13 +2,14 @@ package ch.ksrminecraft.RankPointsAPI.db;
 
 import javax.sql.DataSource;
 import java.sql.Connection;
+import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.logging.Logger;
 
 public final class SchemaInitializer {
     private SchemaInitializer() {}
 
-    public static void ensure(DataSource ds, Logger logger) throws Exception {
+    public static void ensure(DataSource ds, Logger logger) throws SQLException {
         try (Connection con = ds.getConnection(); Statement st = con.createStatement()) {
             st.execute("""
         CREATE TABLE IF NOT EXISTS points (

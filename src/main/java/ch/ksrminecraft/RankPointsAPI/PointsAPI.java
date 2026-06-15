@@ -6,6 +6,7 @@ import ch.ksrminecraft.RankPointsAPI.db.SchemaInitializer;
 import com.zaxxer.hikari.HikariDataSource;
 
 import javax.sql.DataSource;
+import java.sql.SQLException;
 import java.util.UUID;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -23,14 +24,19 @@ public class PointsAPI implements RankPointsService {
         this.debug = debug;
         this.excludeStaff = excludeStaff;
 
-        this.ds = HikariDataSourceFactory.create(jdbcUrl, user, pass, debug);
+        DataSource createdDataSource = HikariDataSourceFactory.create(jdbcUrl, user, pass, debug);
         try {
-            SchemaInitializer.ensure(ds, this.logger);
-        } catch (Exception e) {
+            SchemaInitializer.ensure(createdDataSource, this.logger);
+            this.service = new JdbcPointsService(createdDataSource, excludeStaff);
+            this.ds = createdDataSource;
+        } catch (SQLException e) {
+            closeDataSource(createdDataSource);
             this.logger.log(Level.SEVERE, "Failed to ensure schema", e);
             throw new RuntimeException(e);
+        } catch (RuntimeException e) {
+            closeDataSource(createdDataSource);
+            throw e;
         }
-        this.service = new JdbcPointsService(ds, excludeStaff);
     }
 
     /**
@@ -51,7 +57,7 @@ public class PointsAPI implements RankPointsService {
         try {
             service.addPoints(uuid, delta);
             if (debug) logger.info(() -> "addPoints " + uuid + " +" + delta);
-        } catch (Exception e) {
+        } catch (SQLException e) {
             logger.log(Level.SEVERE, "addPoints failed for " + uuid, e);
         }
     }
@@ -73,7 +79,7 @@ public class PointsAPI implements RankPointsService {
         try {
             service.setPoints(uuid, points);
             if (debug) logger.info(() -> "setPoints " + uuid + " = " + points);
-        } catch (Exception e) {
+        } catch (SQLException e) {
             logger.log(Level.SEVERE, "setPoints failed for " + uuid, e);
         }
     }
@@ -96,7 +102,7 @@ public class PointsAPI implements RankPointsService {
             int p = service.getPoints(uuid);
             if (debug) logger.info(() -> "getPoints " + uuid + " -> " + p);
             return p;
-        } catch (Exception e) {
+        } catch (SQLException e) {
             logger.log(Level.SEVERE, "getPoints failed for " + uuid, e);
             return 0;
         }
@@ -124,7 +130,15 @@ public class PointsAPI implements RankPointsService {
     }
 
     public void close() {
-        if (ds instanceof HikariDataSource hikari && !hikari.isClosed()) {
+        closeDataSource(ds);
+    }
+
+    private void closeDataSource(DataSource dataSource) {
+        if (dataSource == null) {
+            return;
+        }
+
+        if (dataSource instanceof HikariDataSource hikari && !hikari.isClosed()) {
             hikari.close();
             if (debug) {
                 logger.info("RankPointsAPI datasource closed.");
